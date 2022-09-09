@@ -89,95 +89,70 @@ BMAP_DEFAULT_ATTRS = {
 }    
 
 class bmap:
-    # __attr = {  'figsize'   :   (12,8),
-    #             'dpi'       :   180,
-    #             'proj'      :   'cea',
-    #             'lon'       :   [-180.,180.],
-    #             'lat'       :   [-60.,60.],
-    #             'res'       :   'c',
-    #             'latinv'    :   0.,
-    #             'loninv'    :   0.,
-    #             'fontsize'  :   10,
-    #             'cmap'      :   'jet',
-    #             }
-
-    # __base = None
 
     def __init__(self, **kw):
-        self.__attr = BMAP_DEFAULT_ATTRS
-        # self.__attr = {
-        #     'figsize'   :   (12,8),
-        #         'dpi'       :   180,
-        #         'proj'      :   'cea',
-        #         'lon'       :   [-180.,180.],
-        #         'lat'       :   [-60.,60.],
-        #         'res'       :   'c',
-        #         'latinv'    :   0.,
-        #         'loninv'    :   0.,
-        #         'fontsize'  :   10,
-        #         'cmap'      :   'jet',
-        # }
-        self.__base = None
+        self._attr = BMAP_DEFAULT_ATTRS
+        self._base = None
         for k in kw:
-            self.__attr[k] = kw[k]
+            self._attr[k] = kw[k]
 
     def resetall(self):
-        self.__attr = BMAP_DEFAULT_ATTRS
-        self.__base = None
+        self._attr = BMAP_DEFAULT_ATTRS
+        self._base = None
 
     def reset(self, **kw):
         self.resetall()
         for k in kw:
-            self.__attr[k] = kw[k]
+            self._attr[k] = kw[k]
     
     def set(self, **kw):
         for k in kw:
-            self.__attr[k] = kw[k]
+            self._attr[k] = kw[k]
     
 
     def bg(self):
-        plt.figure(figsize=self.__attr['figsize'], dpi=self.__attr['dpi'])
-        self.__base = Basemap(projection=self.__attr['proj'], llcrnrlon = self.__attr['lon'][0], llcrnrlat = self.__attr['lat'][0], 
-                    urcrnrlon = self.__attr['lon'][1], urcrnrlat = self.__attr['lat'][1], resolution=self.__attr['res'])
-        self.__base.drawcoastlines(color=self.__attr['clcolor'], linewidth=self.__attr['cllw'])
+        plt.figure(figsize=self._attr['figsize'], dpi=self._attr['dpi'])
+        self._base = Basemap(projection=self._attr['proj'], llcrnrlon = self._attr['lon'][0], llcrnrlat = self._attr['lat'][0], 
+                    urcrnrlon = self._attr['lon'][1], urcrnrlat = self._attr['lat'][1], resolution=self._attr['res'])
+        self._base.drawcoastlines(color=self._attr['clcolor'], linewidth=self._attr['cllw'])
 
-        if int(self.__attr['latinv']):
-            self.__base.drawparallels(np.arange(self.__attr['lat'][0], self.__attr['lat'][1], self.__attr['latinv']), labels=[1,0,0,0],
-                                        color=self.__attr['gridc'], linewidth=self.__attr['gridlw'], fontsize=self.__attr['fontsize'])
-        if int(self.__attr['loninv']):
-            self.__base.drawmeridians(np.arange(self.__attr['lon'][0], self.__attr['lon'][1], self.__attr['loninv']), labels=[0,0,0,1],
-                                        color=self.__attr['gridc'], linewidth=self.__attr['gridlw'], fontsize=self.__attr['fontsize'])
+        if int(self._attr['latinv']):
+            self._base.drawparallels(np.arange(self._attr['lat'][0], self._attr['lat'][1], self._attr['latinv']), labels=[1,0,0,0],
+                                        color=self._attr['gridc'], linewidth=self._attr['gridlw'], fontsize=self._attr['fontsize'])
+        if int(self._attr['loninv']):
+            self._base.drawmeridians(np.arange(self._attr['lon'][0], self._attr['lon'][1], self._attr['loninv']), labels=[0,0,0,1],
+                                        color=self._attr['gridc'], linewidth=self._attr['gridlw'], fontsize=self._attr['fontsize'])
 
     def colorbg(self, style=None):
         if style == 'bluemarble':
-            self.__base.bluemarble(scale=self.__attr['clbgs'])
+            self._base.bluemarble(scale=self._attr['clbgs'])
         if style == 'shadedrelief':
-            self.__base.shadedrelief(scale=self.__attr['clbgs'])
+            self._base.shadedrelief(scale=self._attr['clbgs'])
         if style == 'etopo':
-            self.__base.etopo(scale=self.__attr['clbgs'])
+            self._base.etopo(scale=self._attr['clbgs'])
 
     def fitboundaries(self, source):
-        self.__attr['lon'] = [source.long[0,:].min(), source.long[0,:].max()]
-        self.__attr['lat'] = [source.lat[:,0].min(), source.lat[:,0].max()]
+        self._attr['lon'] = [source.long[0,:].min(), source.long[0,:].max()]
+        self._attr['lat'] = [source.lat[:,0].min(), source.lat[:,0].max()]
     
     def womesh(self, source):
         _lon, _lat = np.meshgrid(source.long[0,:], source.lat[:,0])
-        return self.__base(_lon, _lat)
+        return self._base(_lon, _lat)
 
     def quickcountourf(self, source, key):
         self.fitboundaries(source)
         self.bg()
         _X, _Y = self.womesh(source)
-        if 'levels' in self.__attr.keys():
-            self.__base.contourf(_X,_Y,source.get(key),cmap=self.__attr['cmap'],levels=self.__attr['levels'])
+        if 'levels' in self._attr.keys():
+            self._base.contourf(_X,_Y,source.get(key),cmap=self._attr['cmap'],levels=self._attr['levels'])
         else:
-            self.__base.contourf(_X,_Y,source.get(key),cmap=self.__attr['cmap'])
+            self._base.contourf(_X,_Y,source.get(key),cmap=self._attr['cmap'])
 
 class tymap(bmap):
 
     def __boundaries(self, track):
-        self._bmap__attr['lat'] = [max(track[1].min()-5.,-70), min(track[1].max()+5.,70)]
-        self._bmap__attr['lon'] = [track[2].min()-10., track[2].max()+10.]
+        self._attr['lat'] = [max(track[1].min()-5.,-70), min(track[1].max()+5.,70)]
+        self._attr['lon'] = [track[2].min()-10., track[2].max()+10.]
 
     def __sshws(self, inten):
         if inten < 25:      # DIST
@@ -199,29 +174,29 @@ class tymap(bmap):
     
     def __plotd(self, track, i):
         # _lon, _lat = np.meshgrid(track[1][i], track[2][i])
-        # _lon2, _lat2 = self._bmap__base(_lon, _lat)
+        # _lon2, _lat2 = self._base(_lon, _lat)
         plt.plot(track[2][i], track[1][i], '.', c=self.__sshws(track[3][i]), ms=7.5, zorder=100)
 
     def plot(self, track):
-        self._bmap__attr['proj'] = 'cyl'
-        self._bmap__attr['cllw'] = .25
-        self._bmap__attr['latinv'] = 0
-        self._bmap__attr['loninv'] = 0
-        self._bmap__attr['gridc'] = 'darkgrey'
-        self._bmap__attr['gridlw'] = .25
+        self._attr['proj'] = 'cyl'
+        self._attr['cllw'] = .25
+        self._attr['latinv'] = 0
+        self._attr['loninv'] = 0
+        self._attr['gridc'] = 'darkgrey'
+        self._attr['gridlw'] = .25
         self.__boundaries(track)
         self.set(clbgs=1., res='i')
         self.bg()
         self.colorbg('bluemarble')
-        self._bmap__base.drawparallels(np.arange(-90,90,10), labels=[1,0,0,0], 
-                                        color=self._bmap__attr['gridc'], linewidth=self._bmap__attr['gridlw'], fontsize=self._bmap__attr['fontsize'])
-        self._bmap__base.drawmeridians(np.arange(-180,180,10), labels=[0,0,0,1], 
-                                        color=self._bmap__attr['gridc'], linewidth=self._bmap__attr['gridlw'], fontsize=self._bmap__attr['fontsize'])
+        self._base.drawparallels(np.arange(-90,90,10), labels=[1,0,0,0], 
+                                        color=self._attr['gridc'], linewidth=self._attr['gridlw'], fontsize=self._attr['fontsize'])
+        self._base.drawmeridians(np.arange(-180,180,10), labels=[0,0,0,1], 
+                                        color=self._attr['gridc'], linewidth=self._attr['gridlw'], fontsize=self._attr['fontsize'])
         _r = range(min([len(j) for j in track]))
         for i in _r:
             self.__plotd(track, i)
             if i < _r[-1]:
-                self._bmap__base.drawgreatcircle(track[2][i],track[1][i],track[2][i+1],track[1][i+1],linewidth=.5,color='w')
+                self._base.drawgreatcircle(track[2][i],track[1][i],track[2][i+1],track[1][i+1],linewidth=.5,color='w')
         print(f'ACE: {ace(track)}')
 
 
