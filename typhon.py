@@ -152,7 +152,8 @@ class tymap(bmap):
 
     def __boundaries(self, track):
         self._attr['lat'] = [max(track[1].min()-5.,-70), min(track[1].max()+5.,70)]
-        self._attr['lon'] = [track[2].min()-10., track[2].max()+10.]
+        self._attr['lon'] = [np.array([longfix(x) for x in track[2]]).min()-10., np.array([longfix(x) for x in track[2]]).max()+10.]
+        #   print(self._attr['lon'])
 
     def __sshws(self, inten):
         if inten < 25:      # DIST
@@ -175,7 +176,7 @@ class tymap(bmap):
     def __plotd(self, track, i):
         # _lon, _lat = np.meshgrid(track[1][i], track[2][i])
         # _lon2, _lat2 = self._base(_lon, _lat)
-        plt.plot(track[2][i], track[1][i], '.', c=self.__sshws(track[3][i]), ms=7.5, zorder=100)
+        plt.plot(longfix(track[2][i]), track[1][i], '.', c=self.__sshws(track[3][i]), ms=7.5, zorder=100)
 
     def plot(self, track):
         self._attr['proj'] = 'cyl'
@@ -195,7 +196,7 @@ class tymap(bmap):
         _r = range(min([len(j) for j in track]))
         for i in _r:
             self.__plotd(track, i)
-            if i < _r[-1]:
+            if i < _r[-1] and ifsamehem(track[2][i],track[2][i+1]):
                 self._base.drawgreatcircle(track[2][i],track[1][i],track[2][i+1],track[1][i+1],linewidth=.5,color='w')
         print(f'ACE: {ace(track)}')
 
@@ -228,6 +229,10 @@ def coorproc(t, *args):
     for arg in args:
         for tl in t:
             _r = list(tl[arg])
+            while _r[0] == ' ':
+                _r.remove(' ')
+            if _r[-1].upper() == 'S' or _r[-1].upper() == 'W':
+                _r.insert(0,'-')
             _r.pop()
             _r.insert(-1,'.')
             tl[arg] = ''.join(_r)
@@ -270,3 +275,12 @@ def readjtwc(ipath, opath):
     _p = pd.DataFrame(trx)
     _p.to_csv(opath,index=None, header=None)
 '''
+
+def longfix(lon: float):
+    if lon < 0:
+        return 360.+lon
+    else:
+        return lon
+
+def ifsamehem(x, y):
+    return (np.sign(x)*np.sign(y)+1)/2.
