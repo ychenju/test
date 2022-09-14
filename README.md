@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
     <head>
         <meta charset="UTF-8">
@@ -7,7 +6,6 @@
             For test only
         </title>
     </head>
-    
     <body>
         <h2>
             Test
